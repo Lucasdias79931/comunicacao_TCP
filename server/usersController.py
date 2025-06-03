@@ -10,13 +10,13 @@ class usersControllers:
     def criar_usuario(self, name, password, lock):
         try:
             lock.acquire()
-            while True:
-                id_root = str(uuid.uuid4())
-                user_path = os.path.join(self.baseDir, id_root)
-                if not os.path.exists(user_path):
-                    os.makedirs(user_path)
-                    adicionar_usuario(name, password, id_root)
-                    return True
+            
+            id_root = str(uuid.uuid4())
+            user_path = os.path.join(self.baseDir, id_root)
+            
+            os.makedirs(user_path)
+            adicionar_usuario(name, password, id_root)
+            return True
         finally:
             lock.release()
 

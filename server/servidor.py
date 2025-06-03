@@ -78,15 +78,12 @@ def handle_client(conn, addr):
         print(f"[-] Conexao encerrada com {addr}")
 
 
-def main():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((HOST, PORT))
-        s.listen()
-        print(f"[+] Servidor ouvindo em {HOST}:{PORT}")
-        while True:
-            conn, addr = s.accept()
-            thread = threading.Thread(target=handle_client, args=(conn, addr))
-            thread.start()
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen()
+    print(f"[+] Servidor ouvindo em {HOST}:{PORT}")
+    while True:
+        conn, addr = s.accept()
+        thread = threading.Thread(target=handle_client, args=(conn, addr))
+        thread.start()
 
-if __name__ == "__main__":
-    main()

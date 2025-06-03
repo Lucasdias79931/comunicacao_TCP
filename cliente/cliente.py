@@ -19,7 +19,6 @@ def menu_principal():
     print("LIST")
     print("DELETE nome_arquivo")
     print("DELETE_ACCOUNT")
-    print("DESCONECT")
     print("QUIT")
 
 def UPLOAD(command, sock, lock=None):
@@ -70,6 +69,7 @@ try:
             opcao, nome, senha = login_menu()
 
             comando = "LOGIN" if opcao == '1' else "REGISTER"
+
             s.sendall(f"{comando} {nome} {senha}\n".encode())
             response = s.recv(1024).decode()
             print(response)
@@ -81,21 +81,20 @@ try:
                 print("User not found!")
                 continue  
 
-            menu_principal()
+            
             
             stop = False
             while True:
+                menu_principal()
                 command = input(">> ")
                 if command.strip().startswith("UPLOAD"):
                     UPLOAD(command,s)
                 elif command.strip().startswith("DOWNLOAD"):
                     s.sendall(f"{command}\n".encode())
                     DOWNLOAD(command,s)
-                elif command.strip() == "DESCONECT":
-                    print("DESCONECTING...")
-                    stop = True
-                    break
+                
                 elif command.strip() == "QUIT":
+                    stop = True
                     break
                 else:
                     response = s.recv(4096).decode()

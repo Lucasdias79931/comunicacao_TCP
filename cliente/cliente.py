@@ -19,74 +19,92 @@ def menu_principal():
     print("LIST")
     print("DELETE nome_arquivo")
     print("DELETE_ACCOUNT")
+    print("DESCONECT")
     print("QUIT")
 
-def main():
-    HOST = '127.0.0.1'
-    PORT = 5000
+def UPLOAD(command, sock, lock=None):
+    parts = command.strip().split(maxsplit=1)
+    if len(parts) != 2:
+        print("Formato correto: UPLOAD caminho_arquivo")
+        return
+    filepath = parts[1]
+    if not os.path.isfile(filepath):
+        print(f"file <{filepath}> not foud!.")
+        return
 
-    while True:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((HOST, PORT))
+    filename = os.path.basename(filepath)
+    with open(filepath, 'rb') as f:
+        content = f.read()
+    sock.sendall(f"UPLOAD {filename}\n".encode())
+    sock.sendall(f"{len(content)}\n".encode())
+    sock.sendall(content)
+    print(sock.recv(1024).decode())
+
+def DOWNLOAD(command, sock, lock=None):
+    response= sock.recv(1024).decode()
+    if response.strip().isdigit():
+        size = int(response.strip())
+        filename = command.strip().split(maxsplit=1)[1]
+        with open("baixado_" + filename, 'wb') as f:
+            responsed = 0
+            while responsed < size:
+                data = sock.recv(4096)
+                if not data:
+                    break
+                f.write(data)
+                responsed += len(data)
+        print("files donwloaded with sucess.")
+    else:
+        print(response)
+
+
+HOST = '127.0.0.1'
+PORT = 5000
+
+try:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        while True:
             print(s.recv(1024).decode())
 
             opcao, nome, senha = login_menu()
+
             comando = "LOGIN" if opcao == '1' else "REGISTER"
             s.sendall(f"{comando} {nome} {senha}\n".encode())
-            resposta = s.recv(1024).decode()
-            print(resposta)
+            response = s.recv(1024).decode()
+            print(response)
 
             if comando == "REGISTER":
-                continue  
+                continue 
 
-            if "Login bem-sucedido" not in resposta:
+            if "Login bem-sucedido" not in response:
+                print("User not found!")
                 continue  
 
             menu_principal()
             
+            stop = False
             while True:
-                entrada = input(">> ")
-                if entrada.strip().startswith("UPLOAD"):
-                    partes = entrada.strip().split(maxsplit=1)
-                    if len(partes) != 2:
-                        print("Formato correto: UPLOAD caminho_arquivo")
-                        continue
-                    caminho_arquivo = partes[1]
-                    if not os.path.isfile(caminho_arquivo):
-                        print("Arquivo não encontrado.")
-                        continue
-
-                    nome_arquivo = os.path.basename(caminho_arquivo)
-                    with open(caminho_arquivo, 'rb') as f:
-                        conteudo = f.read()
-                    s.sendall(f"UPLOAD {nome_arquivo}\n".encode())
-                    s.sendall(f"{len(conteudo)}\n".encode())
-                    s.sendall(conteudo)
-                    print(s.recv(1024).decode())
+                command = input(">> ")
+                if command.strip().startswith("UPLOAD"):
+                    UPLOAD(command,s)
+                elif command.strip().startswith("DOWNLOAD"):
+                    s.sendall(f"{command}\n".encode())
+                    DOWNLOAD(command,s)
+                elif command.strip() == "DESCONECT":
+                    print("DESCONECTING...")
+                    stop = True
+                    break
+                elif command.strip() == "QUIT":
+                    break
                 else:
-                    s.sendall(f"{entrada}\n".encode())
-                    if entrada.strip().startswith("DOWNLOAD"):
-                        resposta = s.recv(1024).decode()
-                        if resposta.strip().isdigit():
-                            tamanho = int(resposta.strip())
-                            nome_arquivo = entrada.strip().split(maxsplit=1)[1]
-                            with open("baixado_" + nome_arquivo, 'wb') as f:
-                                recebido = 0
-                                while recebido < tamanho:
-                                    data = s.recv(4096)
-                                    if not data:
-                                        break
-                                    f.write(data)
-                                    recebido += len(data)
-                            print("Arquivo baixado com sucesso.")
-                        else:
-                            print(resposta)
-                    elif entrada.strip() == "QUIT":
-                        break
-                    else:
-                        resposta = s.recv(4096).decode()
-                        print(resposta)
-            break
+                    response = s.recv(4096).decode()
+                    print(response)
+            if stop:
+                break
+        
+except Exception as e:
+    print(e)
+    exit(1)
 
-if __name__ == "__main__":
-    main()
+

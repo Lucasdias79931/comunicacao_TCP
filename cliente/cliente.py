@@ -77,11 +77,13 @@ try:
 
             
             
+            
+            
             stop = False
             while True:
                 print("Use comandos: UPLOAD, DOWNLOAD, LIST, DELETE, DELETE_ACCOUNT, QUIT")
-                command = input(">> ").upper()
-                if command.startswith("UPLOAD"):
+                command = input(">> ")
+                if command.upper().startswith("UPLOAD"):
                     UPLOAD(command,s)
                 elif command.strip().startswith("DOWNLOAD"):
                     s.sendall(f"{command}\n".encode())

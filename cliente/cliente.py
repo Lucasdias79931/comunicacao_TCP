@@ -12,14 +12,7 @@ def login_menu():
         else:
             print(f"Opcao inválida: {opcao}")
 
-def menu_principal():
-    print("Comandos disponíveis:")
-    print("UPLOAD caminho_arquivo")
-    print("DOWNLOAD nome_arquivo")
-    print("LIST")
-    print("DELETE nome_arquivo")
-    print("DELETE_ACCOUNT")
-    print("QUIT")
+
 
 def UPLOAD(command, sock, lock=None):
     parts = command.strip().split(maxsplit=1)
@@ -63,8 +56,9 @@ PORT = 5000
 try:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
+        print(s.recv(1024).decode())
         while True:
-            print(s.recv(1024).decode())
+            
 
             opcao, nome, senha = login_menu()
 
@@ -85,17 +79,25 @@ try:
             
             stop = False
             while True:
-                menu_principal()
-                command = input(">> ")
-                if command.strip().startswith("UPLOAD"):
+                print("Use comandos: UPLOAD, DOWNLOAD, LIST, DELETE, DELETE_ACCOUNT, QUIT")
+                command = input(">> ").upper()
+                if command.startswith("UPLOAD"):
                     UPLOAD(command,s)
                 elif command.strip().startswith("DOWNLOAD"):
                     s.sendall(f"{command}\n".encode())
                     DOWNLOAD(command,s)
                 
                 elif command.strip() == "QUIT":
+                    print("Desconectando!!!")
+                    s.sendall(f"{command.strip()}\n".encode())  
+                    print(s.recv(1024).decode()) 
                     stop = True
                     break
+
+                elif command.strip() == "LIST":
+                    s.sendall(f"{command}\n".encode())
+                    response = s.recv(1024).decode()
+                    print(response)
                 else:
                     response = s.recv(4096).decode()
                     print(response)

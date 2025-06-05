@@ -23,54 +23,59 @@ def recv_line(conn):
 def handle_client(conn, addr):
     print(f"[+] Nova conexão de {addr}")
     try:
-        conn.sendall(b"Digite: LOGIN nome senha ou REGISTER nome senha\n")
-        data = conn.recv(1024).decode().strip()
-        if data.startswith("REGISTER"):
-            _, nome, senha = data.split()
-            success = users_controller.criar_usuario(nome, senha, lock)
-            if success:
-                msg = b"Registro realizado com sucesso\n"
-            else:
-                msg = b"Erro ao registrar\n"
-            conn.sendall(msg)
-        elif data.startswith("LOGIN"):
-            _, nome, senha = data.split()
-            root = users_controller.validar_usuario(nome, senha)
-            if not root:
-                conn.sendall(b"Login invalido\n")
-                conn.close()
-                return
-            conn.sendall(b"Login bem-sucedido.\n")
-            while True:
-                conn.sendall(b"Use comandos: UPLOAD, DOWNLOAD, LIST, DELETE, DELETE_ACCOUNT, QUIT\n")
-                cmd = recv_line(conn)
-                if cmd == "QUIT":
-                    break
-                elif cmd.startswith("UPLOAD"):
-                    _, filename = cmd.split(maxsplit=1)
-                    tamanho = int(recv_line(conn))
-                    conteudo = b""
-                    while len(conteudo) < tamanho:
-                        chunk = conn.recv(min(4096, tamanho - len(conteudo)))
-                        if not chunk:
-                            break
-                        conteudo += chunk
-                    users_controller.salvar_arquivo(root, filename, conteudo, conn)
-                elif cmd.startswith("DOWNLOAD"):
-                    _, nome_arquivo = cmd.split()
-                    users_controller.enviar_arquivo(root, nome_arquivo, conn)
-                elif cmd == "LIST":
-                    users_controller.listar_arquivos(root, conn)
-                elif cmd.startswith("DELETE"):
-                    _, nome_arquivo = cmd.split()
-                    users_controller.excluir_arquivo(root, nome_arquivo, conn)
-                elif cmd == "DELETE_ACCOUNT":
-                    users_controller.excluir_conta(nome, root, conn)
+        while True:
+            conn.sendall(b"Digite: LOGIN nome senha ou REGISTER nome senha\n")
+            data = conn.recv(1024).decode().strip()
+            if data.startswith("REGISTER"):
+                _, nome, senha = data.split()
+                success = users_controller.criar_usuario(nome, senha, lock)
+                if success:
+                    msg = b"Registro realizado com sucesso\n"
                     break
                 else:
-                    conn.sendall(b"Comando invalido\n")
-        else:
-            conn.sendall(b"Comando invalido\n")
+                    msg = b"Erro ao registrar\n"
+                conn.sendall(msg)
+            elif data.startswith("LOGIN"):
+                _, nome, senha = data.split()
+                root = users_controller.validar_usuario(nome, senha)
+                if not root:
+                    conn.sendall(b"Login invalido\n")
+                else:
+                    conn.sendall(b"Login bem-sucedido.\n")
+                    break
+            else:
+                conn.sendall(b"Comando invalido\n")
+
+        while True:
+            cmd = recv_line(conn)
+            if cmd== "QUIT":
+                print("cliente desconectando")
+                conn.sendall(b'[servidor]desconectando')
+                break
+            elif cmd.startswith("UPLOAD"):
+                _, filename = cmd.split(maxsplit=1)
+                tamanho = int(recv_line(conn))
+                conteudo = b""
+                while len(conteudo) < tamanho:
+                    chunk = conn.recv(min(4096, tamanho - len(conteudo)))
+                    if not chunk:
+                        break
+                    conteudo += chunk
+                users_controller.salvar_arquivo(root, filename, conteudo, conn)
+            elif cmd.startswith("DOWNLOAD"):
+                _, nome_arquivo = cmd.split()
+                users_controller.enviar_arquivo(root, nome_arquivo, conn)
+            elif cmd == "LIST":
+                users_controller.listar_arquivos(root, conn)
+            elif cmd.startswith("DELETE"):
+                _, nome_arquivo = cmd.split()
+                users_controller.excluir_arquivo(root, nome_arquivo, conn)
+            elif cmd == "DELETE_ACCOUNT":
+                users_controller.excluir_conta(nome, root, conn)
+                break
+            else:
+                conn.sendall(b"Comando invalido\n")
+        
     except Exception as e:
         print(f"[-] Erro com cliente {addr}: {e}")
     finally:

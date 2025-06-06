@@ -55,7 +55,7 @@ try:
 
                     elif command == "DOWNLOAD":
                         s.sendall(f'{command} {content}\n'.encode())
-                        DOWNLOAD(f'{command} {content}', s, lock)
+                        DOWNLOAD(f'{command} {content}', s)
 
                     elif command == "QUIT":
                         s.sendall(f'{command}\n'.encode())

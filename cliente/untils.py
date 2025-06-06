@@ -27,7 +27,7 @@ def login_menu():
         else:
             print(f"Opcao inválida: {opcao}\ndigite 'HELP' parar ajuda!")
 
-def UPLOAD(command, sock, lock):
+def UPLOAD(command, sock):
     parts = command.strip().split(maxsplit=1)
     if len(parts) != 2:
         print("Formato correto: UPLOAD caminho_arquivo")
@@ -38,34 +38,34 @@ def UPLOAD(command, sock, lock):
         print(f"Arquivo <{filepath}> não encontrado.")
         return
 
-    with lock:
-        try:
-            filename = os.path.basename(filepath)
-            filesize = os.path.getsize(filepath)
+    
+    try:
+        filename = os.path.basename(filepath)
+        filesize = os.path.getsize(filepath)
 
-            sock.sendall(f"UPLOAD {filename}\n".encode())
-            sock.sendall(f"{filesize}\n".encode())
+        sock.sendall(f"UPLOAD {filename}\n".encode())
+        sock.sendall(f"{filesize}\n".encode())
 
-            with open(filepath, 'rb') as f:
-                enviado = 0
-                while True:
-                    dado = f.read(4096)
-                    if not dado:
-                        break
-                    sock.sendall(dado)
-                    enviado += len(dado)
+        with open(filepath, 'rb') as f:
+            enviado = 0
+            while True:
+                dado = f.read(4096)
+                if not dado:
+                    break
+                sock.sendall(dado)
+                enviado += len(dado)
 
-            resposta = sock.recv(1024)
-            if not resposta:
-                print("Servidor desconectou durante o upload.")
-                return
-            print(resposta.decode())
+        resposta = sock.recv(1024)
+        if not resposta:
+            print("Servidor desconectou durante o upload.")
+            return
+        print(resposta.decode())
 
-        except (socket.timeout, ConnectionResetError, BrokenPipeError, OSError) as e:
-            print(f"[ERRO - UPLOAD] {e}")
+    except (socket.timeout, ConnectionResetError, BrokenPipeError, OSError) as e:
+        print(f"[ERRO - UPLOAD] {e}")
 
 
-def DOWNLOAD(command, sock, lock):
+def DOWNLOAD(command, sock):
     parts = command.strip().split(maxsplit=1)
     if len(parts) != 2:
         print("Formato correto: DOWNLOAD nome_arquivo")
@@ -73,27 +73,27 @@ def DOWNLOAD(command, sock, lock):
     filename = parts[1]
 
     try:
-        with lock:
-            response = sock.recv(1024)
-            if not response:
-                print("Servidor desconectou durante o download.")
-                return
-            response = response.decode()
+      
+        response = sock.recv(1024)
+        if not response:
+            print("Servidor desconectou durante o download.")
+            return
+        response = response.decode()
 
-            if response.strip().isdigit():
-                size = int(response.strip())
-                with open("baixado_" + filename, 'wb') as f:
-                    dado = 0
-                    while dado < size:
-                        data = sock.recv(4096)
-                        if not data:
-                            print("Conexão perdida durante o download.")
-                            return
-                        f.write(data)
-                        dado += len(data)
-                print("Arquivo baixado com sucesso.")
-            else:
-                print(response)
+        if response.strip().isdigit():
+            size = int(response.strip())
+            with open("baixado_" + filename, 'wb') as f:
+                dado = 0
+                while dado < size:
+                    data = sock.recv(4096)
+                    if not data:
+                        print("Conexão perdida durante o download.")
+                        return
+                    f.write(data)
+                    dado += len(data)
+            print("Arquivo baixado com sucesso.")
+        else:
+            print(response)
     except (socket.timeout, ConnectionResetError, BrokenPipeError, OSError) as e:
         print(f"[ERRO - DOWNLOAD] {e}")
     

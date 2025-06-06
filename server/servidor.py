@@ -21,12 +21,13 @@ def recv_line(conn):
     return data.decode().strip()
 
 def handle_client(conn, addr):
+    conn.settimeout(60)
     print(f"[+] Nova conexão de {addr}")
     try:
         while True:
-            conn.sendall(b"Digite: LOGIN nome senha ou REGISTER nome senha\n")
+            conn.sendall("CONEXÃO INICIADA\n".encode())
             data = conn.recv(1024).decode().strip()
-            if data.startswith("REGISTER"):
+            if data.startswith("REGISTRAR"):
                 _, nome, senha = data.split()
                 success = users_controller.criar_usuario(nome, senha, lock)
                 if success:
@@ -35,7 +36,7 @@ def handle_client(conn, addr):
                 else:
                     msg = b"Erro ao registrar\n"
                 conn.sendall(msg)
-            elif data.startswith("LOGIN"):
+            elif data.startswith("ENTRAR"):
                 _, nome, senha = data.split()
                 root = users_controller.validar_usuario(nome, senha)
                 if not root:
@@ -73,6 +74,7 @@ def handle_client(conn, addr):
 
             elif cmd == "DELETE_ACCOUNT":
                 users_controller.excluir_conta(nome, root, conn)
+                conn.sendall("conta excluida!\ndesconectando!".encode())
                 break
             else:
                 conn.sendall(b"Comando invalido\n")

@@ -48,7 +48,7 @@ def handle_client(conn, addr):
 
         while True:
             cmd = recv_line(conn)
-            if cmd== "QUIT":
+            if cmd == "QUIT":
                 print("cliente desconectando")
                 conn.sendall(b'[servidor]desconectando')
                 break
@@ -70,6 +70,7 @@ def handle_client(conn, addr):
             elif cmd.startswith("DELETE"):
                 _, nome_arquivo = cmd.split()
                 users_controller.excluir_arquivo(root, nome_arquivo, conn)
+
             elif cmd == "DELETE_ACCOUNT":
                 users_controller.excluir_conta(nome, root, conn)
                 break

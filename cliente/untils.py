@@ -1,5 +1,6 @@
 import os
 import socket
+from tqdm import tqdm
 
 
 def HELP():
@@ -43,17 +44,22 @@ def UPLOAD(command, sock):
         filename = os.path.basename(filepath)
         filesize = os.path.getsize(filepath)
 
+        
+
         sock.sendall(f"UPLOAD {filename}\n".encode())
         sock.sendall(f"{filesize}\n".encode())
+        #ith open(filepath, 'rb') as f, tqdm(total=filesize, unit='B', unit_scale=True, desc=f"Enviando {filename}") as barra:
 
         with open(filepath, 'rb') as f:
             enviado = 0
             while True:
-                dado = f.read(4096)
-                if not dado:
-                    break
-                sock.sendall(dado)
-                enviado += len(dado)
+
+                    dado = f.read(4096*1024)
+                    if not dado:
+                        break
+                    sock.sendall(dado)
+                    enviado += len(dado)
+         #               barra.update(len(dado)) 
 
         resposta = sock.recv(1024)
         if not resposta:

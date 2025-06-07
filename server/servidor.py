@@ -2,6 +2,7 @@ import socket
 import threading
 import os
 from usersController import usersControllers
+from fileContoller import fileControle 
 
 HOST = '0.0.0.0'
 PORT = 5000
@@ -10,8 +11,8 @@ PORT = 5000
 BASE_DIR = os.path.abspath('./alldir')
 os.makedirs(BASE_DIR, exist_ok=True)
 
-# Controlador de usuários
 users_controller = usersControllers(BASE_DIR)
+fc = fileControle(BASE_DIR)
 lock = threading.Lock()
 
 def recv_line(conn):
@@ -62,15 +63,15 @@ def handle_client(conn, addr):
                     if not chunk:
                         break
                     conteudo += chunk
-                users_controller.salvar_arquivo(root, filename, conteudo, conn)
+                fc.salvar_arquivo(root, filename, conteudo, conn)
             elif cmd.startswith("DOWNLOAD"):
                 _, nome_arquivo = cmd.split()
-                users_controller.enviar_arquivo(root, nome_arquivo, conn)
+                fc.enviar_arquivo(root, nome_arquivo, conn)
             elif cmd == "LIST":
-                users_controller.listar_arquivos(root, conn)
+                fc.listar_arquivos(root, conn)
             elif cmd.startswith("DELETE"):
                 _, nome_arquivo = cmd.split()
-                users_controller.excluir_arquivo(root, nome_arquivo, conn)
+                fc.excluir_arquivo(root, nome_arquivo, conn)
 
             elif cmd == "DELETE_ACCOUNT":
                 users_controller.excluir_conta(nome, root, conn)

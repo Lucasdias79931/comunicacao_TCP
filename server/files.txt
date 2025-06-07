@@ -1,1 +1,0 @@
-/home/asmita/workspace/agssa/aplicacao/AGUA/arquivos_execucao_teste/covid/pequenas/sequencias_treinamento.fasta

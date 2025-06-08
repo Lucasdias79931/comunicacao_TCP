@@ -87,7 +87,7 @@ def DOWNLOAD(command, sock):
 
         if response.strip().isdigit():
             size = int(response.strip())
-            with open("baixado_" + filename, 'wb') as f:
+            with open(filename, 'wb') as f, tqdm(total=size, unit='B', unit_scale=True, desc=f"Enviando {filename}") as barra:
                 dado = 0
                 while dado < size:
                     data = sock.recv(4096)
@@ -95,7 +95,9 @@ def DOWNLOAD(command, sock):
                         print("Conexão perdida durante o download.")
                         return
                     f.write(data)
+                    
                     dado += len(data)
+                    barra.update(dado)
             print("Arquivo baixado com sucesso.")
         else:
             print(response)

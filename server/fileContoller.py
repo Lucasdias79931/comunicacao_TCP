@@ -9,14 +9,7 @@ class fileControle:
 
 
 
-    def salvar_arquivo(self, root, filename, conteudo, conn):
-        filepath = os.path.join(self.baseDir, root, filename)
-        try:
-            with open(filepath, 'wb') as f:
-                f.write(conteudo)
-            conn.sendall(b"Arquivo salvo com sucesso\n")
-        except Exception as e:
-            conn.sendall(f"Erro ao salvar arquivo: {str(e)}\n".encode())
+    
             
     def _salvar_arquivo(self, root, command, conn):
         try:

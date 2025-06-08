@@ -31,12 +31,14 @@ def handle_client(conn, addr):
             if data.startswith("REGISTRAR"):
                 _, nome, senha = data.split()
                 success = users_controller.criar_usuario(nome, senha, lock)
+                msg = b''
                 if success:
                     msg = b"Registro realizado com sucesso\n"
-                    break
+                    
                 else:
                     msg = b"Erro ao registrar\n"
                 conn.sendall(msg)
+                break
             elif data.startswith("ENTRAR"):
                 _, nome, senha = data.split()
                 root = users_controller.validar_usuario(nome, senha)

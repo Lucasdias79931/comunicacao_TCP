@@ -17,7 +17,7 @@ def receber_mensagem(sock):
         print(f"[ERRO DE RECEBIMENTO] {e}")
         return None
 
-def tratar_comando(command, content, s, lock):
+def tratar_comando(command, content, s):
     if command == "UPLOAD":
         UPLOAD(f'{command} {content}', s)
     elif command == "DOWNLOAD":
@@ -38,7 +38,11 @@ def tratar_comando(command, content, s, lock):
 
     elif command == "DELETE_ACCOUNT":
         s.sendall(f'{command}\n'.encode())
-
+    elif command == "QUIT_ACCOUNT":
+        s.sendall(f'{command}\n'.encode())
+        resposta = receber_mensagem(s)
+        if resposta: print(resposta)
+        return True
     elif command == "QUIT":
         s.sendall(f'{command}\n'.encode())
         resposta = receber_mensagem(s)
@@ -66,7 +70,7 @@ try:
             try:
                 comando, nome, senha = login_menu()
                 s.sendall(f"{comando} {nome} {senha}\n".encode())
-
+                print(comando.upper())
                 response = s.recv(1024)
                 if not response:
                     print("Servidor desconectou após login.")
@@ -74,7 +78,8 @@ try:
                 response = response.decode()
                 print(response)
 
-                if comando == "REGISTER":
+                if comando == "REGISTRAR":
+
                     continue
 
                 if "Login bem-sucedido" not in response:
@@ -83,7 +88,7 @@ try:
 
                 stop = False
                 while not stop:
-                    print("Use comandos: UPLOAD, DOWNLOAD, LIST, DELETE, DELETE_ACCOUNT, QUIT")
+                    print("Use comandos: UPLOAD, DOWNLOAD, LIST, DELETE, DELETE_ACCOUNT, QUIT_ACCOUNT,QUIT")
                     command = input(">>command:").upper().strip()
 
                     content = ""
@@ -93,7 +98,7 @@ try:
                             print("Conteúdo não pode ser vazio.")
                             continue
 
-                    stop = tratar_comando(command, content, s, lock)
+                    stop = tratar_comando(command, content, s)
 
                 if stop:
                     break

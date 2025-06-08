@@ -1,6 +1,5 @@
 import os
 import socket
-from tqdm import tqdm
 
 
 def HELP():

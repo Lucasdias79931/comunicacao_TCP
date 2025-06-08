@@ -21,11 +21,11 @@ class fileControle:
 
             with open(filepath, 'wb') as f:
                 while recebido < tamanho:
-                    chunk = conn.recv(min(4096, tamanho - recebido))
-                    if not chunk:
+                    data = conn.recv(min(4096, tamanho - recebido))
+                    if not data:
                         break  
-                    f.write(chunk)
-                    recebido += len(chunk)
+                    f.write(data)
+                    recebido += len(data)
 
             if recebido == tamanho:
                 conn.sendall(b"Arquivo salvo com sucesso\n")

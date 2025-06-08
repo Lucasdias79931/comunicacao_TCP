@@ -38,6 +38,8 @@ class fileControle:
                 conn.sendall(b"Arquivo salvo com sucesso\n")
             else:
                 conn.sendall(b"Erro: arquivo incompleto\n")
+                if os.path.exists(filepath):
+                    os.remove(filepath)
 
         except Exception as e:
             conn.sendall(f"Erro ao salvar arquivo: {str(e)}\n".encode())

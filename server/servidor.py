@@ -21,26 +21,25 @@ lock = threading.Lock()
 def registrar(data, lock):
     
     _, nome, senha = data.split()
-    success = users_controller.criar_usuario(nome, senha, lock)
-    msg = b''
+    success, msg = users_controller.criar_usuario(nome, senha, lock)
+   
     if success:
-        msg = b"Registro realizado com sucesso\n"
+        return msg
         
     else:
-        msg = b"Erro ao registrar\n"
+        return msg
     
-    return msg
+    
 
-def login(data, conn):
+def login(data):
     _, nome, senha = data.split()
     root = users_controller.validar_usuario(nome, senha)
     if not root:
-        conn.sendall(b"Login invalido\n")
+        
 
-        return False
+        return False, None, None, "Login invalido\n".encode()
     else:
-        conn.sendall(b"Login bem-sucedido.\n")
-        return True, root, nome
+        return True, root, nome, "Login bem-sucedido.\n".encode()
 
 
 
@@ -64,10 +63,12 @@ def conexao_cliente(conn, addr):
                 conn.sendall(msg)
                 break
             elif data.startswith("ENTRAR"):
-                sucess, root, nome = login(data, conn)
+                sucess, root, nome, msg= login(data)
 
                 if sucess:
+                    conn.sendall(msg)
                     break
+                conn.sendall(msg)
             else:
                 conn.sendall(b"Comando invalido\n")
 
@@ -88,14 +89,21 @@ def conexao_cliente(conn, addr):
                 fc.enviar_arquivo(root, nome_arquivo, conn)
             elif command == "LIST":
                 fc.listar_arquivos(root, conn)
+            elif command == "DELETE_ACCOUNT":
+                print(nome)
+                
+                sucess, msg =  users_controller.excluir_conta(nome, root)
+                
+                if sucess:
+                    conn.sendall(msg)
+                    break
+                else:
+                    conn.sendall(msg)
             elif command.startswith("DELETE"):
                 _, nome_arquivo = command.split()
                 fc.excluir_arquivo(root, nome_arquivo, conn)
 
-            elif command == "DELETE_ACCOUNT":
-                users_controller.excluir_conta(nome, root, conn)
-                conn.sendall("conta excluida!\ndesconectando!".encode())
-                break
+            
             else:
                 conn.sendall(b"Comando invalido\n")
         

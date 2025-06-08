@@ -24,10 +24,12 @@ Base.metadata.create_all(bind=engine)
 def adicionar_usuario(nome: str, senha: str, diretorio_root: str):
     session = SessionLocal()
     try:
+       
         novo = Usuario(nome=nome, senha=senha, diretorio_root=diretorio_root)
         session.add(novo)
         session.commit()
-        print(f"Usuário '{nome}' adicionado com sucesso.")
+        return f"Usuário '{nome}' adicionado com sucesso."
+        
     except Exception as e:
         session.rollback()
         print(f"Erro ao adicionar usuário: {e}")
@@ -47,18 +49,6 @@ def remover_usuario(nome: str):
     finally:
         session.close()
 
-def alterar_senha(nome: str, nova_senha: str):
-    session = SessionLocal()
-    try:
-        usuario = session.query(Usuario).filter_by(nome=nome).first()
-        if usuario:
-            usuario.senha = nova_senha
-            session.commit()
-            print(f"Senha de '{nome}' alterada.")
-        else:
-            print(f"Usuário '{nome}' não encontrado.")
-    finally:
-        session.close()
 
 def validar_credenciais(nome: str, senha: str):
     session = SessionLocal()
@@ -88,13 +78,16 @@ class usersControllers:
     def criar_usuario(self, name, password, lock):
         try:
             lock.acquire()
+            if not usuario_existe(name):
+                id_root = str(uuid.uuid4())
+                user_path = os.path.join(self.baseDir, id_root)
+                
+                os.makedirs(user_path)
+                adicionar_usuario(name, password, id_root)
+                return True, 'Usuário Registrado'.encode()
+            else:
+                return False, 'usuário existente'.encode()
             
-            id_root = str(uuid.uuid4())
-            user_path = os.path.join(self.baseDir, id_root)
-            
-            os.makedirs(user_path)
-            adicionar_usuario(name, password, id_root)
-            return True
         finally:
             lock.release()
 
@@ -113,7 +106,7 @@ class usersControllers:
     def enviar_arquivo(self, root, filename, conn):
         filepath = os.path.join(self.baseDir, root, filename)
         if not os.path.exists(filepath):
-            conn.sendall(b"Arquivo nao encontrado\n")
+            conn.sendall(f"Arquivo nao encontrado\n".encode())
             return
         size = os.path.getsize(filepath)
         conn.sendall(f"{size}\n".encode())
@@ -141,18 +134,21 @@ class usersControllers:
         else:
             conn.sendall(b"Arquivo nao encontrado\n")
 
-    def excluir_conta(self, nome, root, conn):
+    def excluir_conta(self, nome, root):
         path = os.path.join(self.baseDir, root)
         try:
+            
             shutil.rmtree(path)
             remover_usuario(nome)
-            conn.sendall(b"Conta e arquivos removidos com sucesso\n")
+            return True, "Conta e arquivos removidos com sucesso\n".encode()
         except Exception as e:
-            conn.sendall(f"Erro ao remover conta: {str(e)}\n".encode())
+            print(f"erro ao tentar excluir conta <{e}>")
+            return False, f"Erro ao remover conta!\n".encode()
+
 
 
 
 if __name__ == "__main__":
     adicionar_usuario("lucas", "1234", "/diretorio/lucas")
-    alterar_senha("lucas", "nova123")
+    
     remover_usuario("lucas")

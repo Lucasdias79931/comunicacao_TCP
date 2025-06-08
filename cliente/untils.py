@@ -50,17 +50,15 @@ def UPLOAD(command, sock):
         sock.sendall(f"{filesize}\n".encode())
         with open(filepath, 'rb') as f, tqdm(total=filesize, unit='B', unit_scale=True, desc=f"Enviando {filename}") as barra:
 
-            with open(filepath, 'rb') as f:
-                enviado = 0
-                while True:
+         
+            while True:
 
-                        dado = f.read(4096*1024)
-                        if not dado:
-                            break
-                        sock.sendall(dado)
-                        enviado += len(dado)
-                        
-                        barra.update(len(dado)) 
+                dado = f.read(1024*64)
+                if not dado:
+                    break
+                sock.sendall(dado)
+                
+                barra.update(len(dado)) 
 
         resposta = sock.recv(1024)
         if not resposta:

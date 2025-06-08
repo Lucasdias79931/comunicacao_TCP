@@ -1,7 +1,7 @@
 from untils import DOWNLOAD, HELP, login_menu, UPLOAD, socket
 import threading
 
-HOST = '192.168.1.137'
+HOST = '192.168.1.108'
 PORT = 5000
 
 lock = threading.Lock()
@@ -38,6 +38,7 @@ def tratar_comando(command, content, s):
 
     elif command == "DELETE_ACCOUNT":
         s.sendall(f'{command}\n'.encode())
+        resposta = receber_mensagem(s)
     elif command == "QUIT_ACCOUNT":
         s.sendall(f'{command}\n'.encode())
         resposta = receber_mensagem(s)

@@ -1,5 +1,8 @@
 
 import os
+from until import recv_line
+
+
 class fileControle:
     def __init__(self, baseDir):
         self.baseDir = baseDir
@@ -9,6 +12,26 @@ class fileControle:
     def salvar_arquivo(self, root, filename, conteudo, conn):
         filepath = os.path.join(self.baseDir, root, filename)
         try:
+            with open(filepath, 'wb') as f:
+                f.write(conteudo)
+            conn.sendall(b"Arquivo salvo com sucesso\n")
+        except Exception as e:
+            conn.sendall(f"Erro ao salvar arquivo: {str(e)}\n".encode())
+    def _salvar_arquivo(self, root,filename,command,conn):
+        filepath = os.path.join(self.baseDir, root, filename)
+
+        try:
+            _, filename = command.split(maxsplit=1)
+
+            tamanho = int(recv_line(conn))
+            conteudo = b""
+            while len(conteudo) < tamanho:
+                chunk = conn.recv(min(4096, tamanho - len(conteudo)))
+                if not chunk:
+                    break
+                conteudo += chunk
+
+
             with open(filepath, 'wb') as f:
                 f.write(conteudo)
             conn.sendall(b"Arquivo salvo com sucesso\n")

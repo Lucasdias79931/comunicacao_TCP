@@ -42,17 +42,11 @@ def login(data, conn):
         conn.sendall(b"Login bem-sucedido.\n")
         return True, root, nome
 
-def DOWNLOAD_SERVER(root, command):
-    _, filename = command.split(maxsplit=1)
 
-    tamanho = int(recv_line(conn))
-    conteudo = b""
-    while len(conteudo) < tamanho:
-        chunk = conn.recv(min(4096, tamanho - len(conteudo)))
-        if not chunk:
-            break
-        conteudo += chunk
-    fc.salvar_arquivo(root, filename, conteudo, conn)
+
+
+##################################################
+########## Função Principal ######################
 def conexao_cliente(conn, addr):
     conn.settimeout(60)
     print(f"[+] Nova conexão de {addr}")
@@ -86,15 +80,9 @@ def conexao_cliente(conn, addr):
                 break
 
             elif command.startswith("UPLOAD"):
-                _, filename = command.split(maxsplit=1)
-                tamanho = int(recv_line(conn))
-                conteudo = b""
-                while len(conteudo) < tamanho:
-                    chunk = conn.recv(min(4096, tamanho - len(conteudo)))
-                    if not chunk:
-                        break
-                    conteudo += chunk
-                fc.salvar_arquivo(root, filename, conteudo, conn)
+
+                fc._salvar_arquivo(root,command,conn)
+
             elif command.startswith("DOWNLOAD"):
                 _, nome_arquivo = command.split()
                 fc.enviar_arquivo(root, nome_arquivo, conn)

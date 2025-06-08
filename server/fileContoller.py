@@ -17,26 +17,31 @@ class fileControle:
             conn.sendall(b"Arquivo salvo com sucesso\n")
         except Exception as e:
             conn.sendall(f"Erro ao salvar arquivo: {str(e)}\n".encode())
-    def _salvar_arquivo(self, root,filename,command,conn):
-        filepath = os.path.join(self.baseDir, root, filename)
-
+            
+    def _salvar_arquivo(self, root, command, conn):
         try:
-            _, filename = command.split(maxsplit=1)
+            _, filePath = command.split(maxsplit=1)
+            filepath = os.path.join(self.baseDir, root, filePath)
 
-            tamanho = int(recv_line(conn))
-            conteudo = b""
-            while len(conteudo) < tamanho:
-                chunk = conn.recv(min(4096, tamanho - len(conteudo)))
-                if not chunk:
-                    break
-                conteudo += chunk
-
+            tamanho = int(recv_line(conn)) 
+            recebido = 0
 
             with open(filepath, 'wb') as f:
-                f.write(conteudo)
-            conn.sendall(b"Arquivo salvo com sucesso\n")
+                while recebido < tamanho:
+                    chunk = conn.recv(min(4096, tamanho - recebido))
+                    if not chunk:
+                        break  
+                    f.write(chunk)
+                    recebido += len(chunk)
+
+            if recebido == tamanho:
+                conn.sendall(b"Arquivo salvo com sucesso\n")
+            else:
+                conn.sendall(b"Erro: arquivo incompleto\n")
+
         except Exception as e:
             conn.sendall(f"Erro ao salvar arquivo: {str(e)}\n".encode())
+
 
     def enviar_arquivo(self, root, filename, conn):
         filepath = os.path.join(self.baseDir, root, filename)

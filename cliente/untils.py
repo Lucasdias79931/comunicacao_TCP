@@ -103,4 +103,5 @@ def DOWNLOAD(command, sock):
             print(response)
     except (socket.timeout, ConnectionResetError, BrokenPipeError, OSError) as e:
         print(f"[ERRO - DOWNLOAD] {e}")
-    
+
+

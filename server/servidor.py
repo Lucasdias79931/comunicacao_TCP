@@ -61,7 +61,7 @@ def conexao_cliente(conn, addr):
                 
                 msg = registrar(data,lock)
                 conn.sendall(msg)
-                break
+                
             elif data.startswith("ENTRAR"):
                 sucess, root, nome, msg= login(data)
 

@@ -1,10 +1,18 @@
 from untils import DOWNLOAD, HELP, login_menu, UPLOAD, socket
+from pandas import pd
+from matplotlib import pyplot as plt
 import threading
+import os
 
 HOST = '192.168.1.108'
-PORT = 5000
+PORT = 5001
 
 lock = threading.Lock()
+here = os.path.abspath(os.path.dirname(__name__))
+
+files_to_test = os.path.join(here, 'files_to_test')
+logs = os.path.join(here, "logs")
+os.makedirs(logs, exist_ok=True)
 
 def receber_mensagem(sock):
     try:
@@ -23,29 +31,6 @@ def tratar_comando(command, content, s):
     elif command == "DOWNLOAD":
         s.sendall(f'{command} {content}\n'.encode())
         DOWNLOAD(f'{command} {content}', s)
-
-    elif command == "LIST":
-        s.sendall(f"{command}\n".encode())
-        resposta = receber_mensagem(s)
-        if resposta: print(resposta)
-        else: return True
-
-    elif command == "DELETE":
-        s.sendall(f'{command} {content}\n'.encode())
-        resposta = receber_mensagem(s)
-        if resposta: print(resposta)
-        else: return True
-
-    elif command == "DELETE_ACCOUNT":
-        s.sendall(f'{command}\n'.encode())
-        resposta = receber_mensagem(s)
-   
-    elif command == "QUIT":
-        s.sendall(f'{command}\n'.encode())
-        resposta = receber_mensagem(s)
-        if resposta: print(resposta)
-        return True
-
     else:
         print('Opção inválida.')
     return False
@@ -65,23 +50,7 @@ try:
 
         while True:
             try:
-                comando, nome, senha = login_menu()
-                s.sendall(f"{comando} {nome} {senha}\n".encode())
-                print(comando.upper())
-                response = s.recv(1024)
-                if not response:
-                    print("Servidor desconectou após login.")
-                    break
-                response = response.decode()
-                print(response)
-
-                if comando == "REGISTRAR":
-
-                    continue
-
-                if "Login bem-sucedido" not in response:
-                    print("Usuário não encontrado!")
-                    continue
+               
 
                 stop = False
                 while not stop:

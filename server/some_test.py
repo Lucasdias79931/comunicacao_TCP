@@ -1,9 +1,10 @@
 import os 
 import sys
+import hashlib
 
-file = sys.argv[1]
+hash = hashlib.sha512('lucasdias'.encode())
 
-if os.path.exists(file):
-    print(f'Pacotes: <{os.path.getsize(file) // 1024}>')
-else:
-    print(f'<{file}> não encontrado!\nverifique o caminho correto')
+print(hash.digest())      # → Retorna os bytes do hash (forma binária)
+print(hash.hexdigest())  
+
+print(len(hash.digest()))

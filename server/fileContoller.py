@@ -1,7 +1,7 @@
 
 import os
 from until import recv_line
-
+from hashlib import sha512
 
 class fileControle:
     def __init__(self, baseDir):

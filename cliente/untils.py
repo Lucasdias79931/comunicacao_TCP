@@ -1,7 +1,7 @@
 import os
 import socket
 from tqdm import tqdm
-
+import zipfile
 
 def HELP():
     print("UPLOAD - Digite o comando, em seguida espere o campo 'content' para digitar o path completo do arquivo")
@@ -54,6 +54,7 @@ def UPLOAD(command, sock):
             while True:
 
                 dado = f.read(1024*64)
+                
                 if not dado:
                     break
                 sock.sendall(dado)

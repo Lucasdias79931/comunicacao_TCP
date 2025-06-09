@@ -1,7 +1,7 @@
 from untils import DOWNLOAD, HELP, login_menu, UPLOAD, socket
 import threading
 
-HOST = '192.168.1.108'
+HOST = '192.168.1.166'
 PORT = 5000
 
 lock = threading.Lock()

@@ -49,6 +49,7 @@ def login(data):
 def conexao_cliente(conn, addr):
     conn.settimeout(60)
     print(f"[+] Nova conexão de {addr}")
+    lock_file = threading.Lock()
     try:
         conn.sendall("CONEXÃO INICIADA\n".encode())
         root = ''
@@ -82,11 +83,11 @@ def conexao_cliente(conn, addr):
 
             elif command.startswith("UPLOAD"):
 
-                fc._salvar_arquivo(root,command,conn)
+                fc._salvar_arquivo(root,command,conn, lock)
 
             elif command.startswith("DOWNLOAD"):
                 _, nome_arquivo = command.split()
-                fc.enviar_arquivo(root, nome_arquivo, conn)
+                fc.enviar_arquivo(root, nome_arquivo, conn,lock)
             elif command == "LIST":
                 fc.listar_arquivos(root, conn)
             elif command == "DELETE_ACCOUNT":
@@ -101,7 +102,7 @@ def conexao_cliente(conn, addr):
                     conn.sendall(msg)
             elif command.startswith("DELETE"):
                 _, nome_arquivo = command.split()
-                fc.excluir_arquivo(root, nome_arquivo, conn)
+                fc.excluir_arquivo(root, nome_arquivo, conn, lock)
 
             
             else:

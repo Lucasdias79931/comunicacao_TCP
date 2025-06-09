@@ -35,17 +35,24 @@ def UPLOAD(command, sock):
         return
 
     filepath = parts[1]
-    if not os.path.isfile(filepath):
+    if not os.path.isfile(filepath) and not os.path.isdir(filepath):
         print(f"Arquivo <{filepath}> não encontrado.")
         return
 
     
     try:
-        filename = os.path.basename(filepath)
-        filesize = os.path.getsize(filepath)
-
+        
         
 
+        if os.path.isdir(filepath):
+            compactar_diretorio(filepath, f'{filepath}.zip')
+            filepath = f'{filepath}.zip'
+        
+            filename = os.path.basename(filepath)
+            filesize = os.path.getsize(filepath)
+        else:
+            filename = os.path.basename(filepath)
+            filesize = os.path.getsize(filepath)
         sock.sendall(f"UPLOAD {filename}\n".encode())
         sock.sendall(f"{filesize}\n".encode())
         with open(filepath, 'rb') as f, tqdm(total=filesize, unit='B', unit_scale=True, desc=f"Enviando {filename}") as barra:
@@ -106,3 +113,12 @@ def DOWNLOAD(command, sock):
         print(f"[ERRO - DOWNLOAD] {e}")
 
 
+
+def compactar_diretorio(diretorio_origem, nome_arquivo_zip):
+    
+    with zipfile.ZipFile(nome_arquivo_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for raiz, _, arquivos in os.walk(diretorio_origem):
+            for arquivo in arquivos:
+                caminho_completo = os.path.join(raiz, arquivo)
+                caminho_relativo = os.path.relpath(caminho_completo, diretorio_origem)
+                zipf.write(caminho_completo, caminho_relativo)

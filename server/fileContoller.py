@@ -11,7 +11,7 @@ class fileControle:
 
     
             
-    def _salvar_arquivo(self, root, command, conn):
+    def _salvar_arquivo(self, root, command, conn,lock):
         try:
             _, filePath = command.split(maxsplit=1)
             filepath = os.path.join(self.baseDir, root, filePath)
@@ -19,7 +19,7 @@ class fileControle:
             tamanho = int(recv_line(conn)) 
             recebido = 0
 
-            with open(filepath, 'wb') as f:
+            with open(filepath, 'wb') as f, lock:
                 while recebido < tamanho:
                     data = conn.recv(min(4096, tamanho - recebido))
                     if not data:
@@ -38,19 +38,20 @@ class fileControle:
             conn.sendall(f"Erro ao salvar arquivo: {str(e)}\n".encode())
 
 
-    def enviar_arquivo(self, root, filename, conn):
+    def enviar_arquivo(self, root, filename, conn, lock):
         filepath = os.path.join(self.baseDir, root, filename)
-        if not os.path.exists(filepath):
-            conn.sendall(b"Arquivo nao encontrado\n")
-            return
-        size = os.path.getsize(filepath)
-        conn.sendall(f"{size}\n".encode())
-        with open(filepath, 'rb') as f:
-            while True:
-                chunk = f.read(4096)
-                if not chunk:
-                    break
-                conn.sendall(chunk)
+        with lock:
+            if not os.path.exists(filepath):
+                conn.sendall(b"Arquivo nao encontrado\n")
+                return
+            size = os.path.getsize(filepath)
+            conn.sendall(f"{size}\n".encode())
+            with open(filepath, 'rb') as f:
+                while True:
+                    chunk = f.read(4096)
+                    if not chunk:
+                        break
+                    conn.sendall(chunk)
 
     def listar_arquivos(self, root, conn):
         path = os.path.join(self.baseDir, root)
@@ -61,12 +62,13 @@ class fileControle:
             lista = "\n".join(arquivos) + "\n"
             conn.sendall(lista.encode())
 
-    def excluir_arquivo(self, root, nome, conn):
-        path = os.path.join(self.baseDir, root, nome)
-        if os.path.exists(path):
-            os.remove(path)
-            conn.sendall(b"Arquivo removido\n")
-        else:
-            conn.sendall(b"Arquivo nao encontrado\n")
+    def excluir_arquivo(self, root, nome, conn,lock):
+        with lock:
+            path = os.path.join(self.baseDir, root, nome)
+            if os.path.exists(path):
+                os.remove(path)
+                conn.sendall(b"Arquivo removido\n")
+            else:
+                conn.sendall(b"Arquivo nao encontrado\n")
 
   

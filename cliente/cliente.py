@@ -1,7 +1,7 @@
 from untils import DOWNLOAD, HELP, login_menu, UPLOAD, socket
 import threading
 
-HOST = '192.168.1.166'
+HOST = '192.168.14.129'
 PORT = 5000
 
 lock = threading.Lock()
@@ -85,9 +85,11 @@ try:
 
                 stop = False
                 while not stop:
-                    print("Use comandos: UPLOAD, DOWNLOAD, LIST, DELETE, DELETE_ACCOUNT, QUIT")
+                    print("Use comandos: UPLOAD, DOWNLOAD, LIST, DELETE, DELETE_ACCOUNT, QUIT, HELP")
                     command = input(">>command:").upper().strip()
-
+                    if command == 'HELP':
+                        HELP()
+                        continue
                     
 
                     content = ""

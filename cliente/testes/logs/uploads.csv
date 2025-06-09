@@ -1,4 +1,4 @@
-filename,size_MB,time_to_transfer
+filename,size_MB,_time
 spike31.fasta,31.05,10.9949
 spike39.fasta,39.06,12.9120
 spike151.fasta,151.44,52.5837

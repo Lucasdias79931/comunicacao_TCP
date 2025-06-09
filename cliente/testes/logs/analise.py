@@ -12,13 +12,13 @@ log = log.sort_values(by="size_MB", ascending=True)
 
 #print(log.describe())
 
-log["time_to_transfer_suave"] = log["time_to_transfer"].rolling(window=5, center=True).mean()
+log["_time_suave"] = log["_time"].rolling(window=5, center=True).mean()
 
 fig, ax = plt.subplots(figsize=(12, 6))
 
-ax.plot(log["size_MB"], log["time_to_transfer"], marker='o', linestyle='-', alpha=0.3, label="Original")
+ax.plot(log["size_MB"], log["_time"], marker='o', linestyle='-', alpha=0.3, label="Original")
 
-ax.plot(log["size_MB"], log["time_to_transfer_suave"], color='orange', linewidth=2, label="Média móvel")
+ax.plot(log["size_MB"], log["_time_suave"], color='orange', linewidth=2, label="Média móvel")
 
 ax.set_title('Tempo de transferência vs Tamanho')
 ax.set_xlabel("Tamanho (MB)")
